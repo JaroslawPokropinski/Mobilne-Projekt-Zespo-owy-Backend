@@ -2,6 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const config = require("../configuration/config");
 const router = express.Router();
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize(`mysql://sql7290405:${process.env.DB_PASSWORD}@sql7.freemysqlhosting.net:3306/sql7290405`);
 
 router.get("/", function(req, res) {
   res.send("GET route on things.");
@@ -15,11 +17,29 @@ router.post("/login", function(req, res, next) {
       })
     });
   } else {
-    res.send(403).json({
+    res.status(403).json({
       message: "message: 'Incorrect username or password"
     });
   }
 });
+
+
+router.post("/register", function(req, res, next) {
+  sequelize
+    .query('CALL `Dodaj_Klienta`(:imie, :nazwisko, :dataUrodzenia, :pesel)', 
+          {replacements: { imie: req.body.name, nazwisko: req.body.surname, dataUrodzenia: req.body.dateOfBirth, pesel: req.body.pesel, }})
+    .then(v => res.json({
+      message: 'success'
+    }))
+    .catch(e => {
+      console.log(e)
+      res.status(400).json({
+        message: e.original.sqlMessage
+      })
+    })
+});
+
+
 
 //export this router to use in our index.js
 module.exports = router;
