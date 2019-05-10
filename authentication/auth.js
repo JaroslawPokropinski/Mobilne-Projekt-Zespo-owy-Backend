@@ -1,33 +1,30 @@
-const jwt = require("jsonwebtoken");
-const config = require("../configuration/config");
+const { verify } = require('jsonwebtoken');
+const { secret } = require('../configuration/config');
 
-const checkToken = (req, res, next) => {
-  let token = req.headers["x-access-token"] || req.headers["authorization"]; // Express headers are auto converted to lowercase
-  if (token && token.startsWith("Bearer ")) {
-    // Remove Bearer from string
-    token = token.slice(7, token.length);
-  }
+exports = (req, res, next) => {
+    let token = req.headers['x-access-token'] || req.headers.authorization;
+    if (token && token.startsWith('Bearer ')) {
+        // Remove Bearer from string
+        token = token.slice(7, token.length);
+    }
 
-  if (token) {
-    jwt.verify(token, config.secret, (err, decoded) => {
-      if (err) {
-        return res.json({
-          success: false,
-          message: "Token is not valid"
-        });
-      } else {
+    if (!token) {
+        // res.json({
+        //     success: false,
+        //     message: 'Auth token is not supplied'
+        // });
+        return next('Auth token is not supplied');
+    }
+
+    verify(token, secret, (err, decoded) => {
+        if (err) {
+            // return res.json({
+            //   success: false,
+            //   message: 'Token is not valid'
+            // });
+            next('Token is not valid');
+        }
         req.decoded = decoded;
         next();
-      }
     });
-  } else {
-    return res.json({
-      success: false,
-      message: "Auth token is not supplied"
-    });
-  }
-};
-
-module.exports = {
-  checkToken: checkToken
 };

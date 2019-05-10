@@ -1,11 +1,11 @@
-const express = require("express");
-const router = express.Router();
-const Sequelize = require("sequelize");
-const sequelize = (process.env.DB_URL) ? new Sequelize(`mysql://sql7290405:${process.env.DB_PASSWORD}@${process.env.DB_URL}:3306/sql7290405`)
-  : new Sequelize(`mysql://root:root@localhost:3306/wypozyczalnia_bcdzmiana`);
+import { Router } from 'express';
 
-router.get("/", function (req, res) {
-  res.send("GET route on sec.");
+const router = Router();
+
+// import sequelize from '../configuration/databaseConfig';
+
+router.get('/', (req, res) => {
+    res.send('GET route on sec.');
 });
 /**
  * @swagger
@@ -13,8 +13,8 @@ router.get("/", function (req, res) {
  *    post:
  *      description: List loans of user
  */
-router.get("/loans", function (req, res) {
-  res.send("GET route on sec.");
+router.get('/loans', (req, res) => {
+    res.send('GET route on sec.');
 });
 /**
  * @swagger
@@ -44,9 +44,10 @@ router.get("/loans", function (req, res) {
  *             image:
  *               type: string
  */
-router.get("/cars", function (req, res) {
-  const { car } = require("../mocks")
-  res.json([ car ]);
+router.get('/cars', (req, res) => {
+    // eslint-disable-next-line global-require
+    const { car } = require('../mocks');
+    res.json([car]);
 });
 
 /**
@@ -67,8 +68,8 @@ router.get("/cars", function (req, res) {
  *       200:
  *         description: Rent succeded
  */
-router.post("/rent", function (req, res) {
-  res.send('Rent succeded')
+router.post('/rent', (req, res) => {
+    res.send('Rent succeded');
 });
 
 /**
@@ -89,8 +90,8 @@ router.post("/rent", function (req, res) {
  *       200:
  *         description: Return succeded
  */
-router.post("/return", function (req, res) {
-  res.send('Return succeded')
+router.post('/return', (req, res) => {
+    res.send('Return succeded');
 });
 
 /**
@@ -123,8 +124,8 @@ router.post("/return", function (req, res) {
  *              image:
  *                type: string
  */
-router.get("/history", function (req, res) {
-  res.send('Return succeded')
+router.get('/history', (req, res) => {
+    res.send('Return succeded');
 });
 
-module.exports = router;
+export default router;
