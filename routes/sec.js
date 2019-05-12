@@ -56,7 +56,7 @@ router.get('/cars', (req, res) => {
             let data = currentValue.image;
             let base64data = '';
             if (data !== null) {
-                let buff = new Buffer(data);
+                let buff = Buffer.from(data);
                 base64data = `data:image/jpeg;base64,${buff.toString(
                     'base64'
                 )}`;

@@ -14,7 +14,7 @@ app.use(json());
 app.use('/api', api);
 app.use('/sec', checkToken, sec);
 // Use error handler
-app.use((err, req, res) => {
+app.use(function(err, req, res) {
     res.status(400).json({
         error: err
     });
