@@ -1,8 +1,7 @@
-import { Router } from 'express';
+const { Router } = require('express');
+const sequelize = require('../configuration/databaseConfig');
 
 const router = Router();
-
-// import sequelize from '../configuration/databaseConfig';
 
 router.get('/', (req, res) => {
     res.send('GET route on sec.');
@@ -43,11 +42,41 @@ router.get('/loans', (req, res) => {
  *               type: string
  *             image:
  *               type: string
+ *             owner:
+ *               type: string
+ *             price:
+ *               type: float
+ *             security:
+ *               type: float
  */
 router.get('/cars', (req, res) => {
     // eslint-disable-next-line global-require
-    const { car } = require('../mocks');
-    res.json([car]);
+    sequelize.query('SELECT * FROM "pojazd_mechaniczny"').then(([results]) => {
+        const cars = results.map(currentValue => {
+            let data = currentValue.image;
+            let base64data = '';
+            if (data !== null) {
+                let buff = new Buffer(data);
+                base64data = `data:image/jpeg;base64,${buff.toString(
+                    'base64'
+                )}`;
+            }
+            return {
+                id: currentValue.id_pojazdu,
+                name: currentValue.nazwa,
+                year: currentValue.rocznik,
+                dmc: currentValue.dmc,
+                seats: currentValue.liczba_siedzen,
+                mileage: currentValue.przebieg,
+                category: currentValue.kategoria,
+                image: base64data,
+                owner: currentValue.login,
+                price: currentValue.cena,
+                security: currentValue.kaucja
+            };
+        });
+        res.json(cars);
+    });
 });
 
 /**
@@ -68,7 +97,17 @@ router.get('/cars', (req, res) => {
  *       200:
  *         description: Rent succeded
  */
+const rentalsQuery = `INSERT INTO wypozyczenia("ID_Klienta", "ID_Pojazdu", "data_Wypozyczenia", "oplacenie_Kaucji", "zwrocenie_Pojazdu")
+VALUES(:clientId, :carId, :date, true ,false);`;
+
 router.post('/rent', (req, res) => {
+    sequelize.query(rentalsQuery, {
+        replacements: {
+            clientId: req.decoded.id,
+            carId: req.body.carId,
+            date: '2019-05-12'
+        }
+    });
     res.send('Rent succeded');
 });
 
@@ -128,4 +167,4 @@ router.get('/history', (req, res) => {
     res.send('Return succeded');
 });
 
-export default router;
+module.exports = router;

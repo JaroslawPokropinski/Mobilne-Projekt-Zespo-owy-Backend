@@ -1,11 +1,11 @@
-import { Router } from 'express';
-import { sign } from 'jsonwebtoken';
-import { secret } from '../configuration/config';
-import {
+const { Router } = require('express');
+const { sign } = require('jsonwebtoken');
+const { secret } = require('../configuration/config');
+const {
     comparePassword,
     cryptPassword
-} from '../authentication/passwordEncryptor';
-import sequelize from '../configuration/databaseConfig';
+} = require('../authentication/passwordEncryptor');
+const sequelize = require('../configuration/databaseConfig');
 
 const router = Router();
 
@@ -31,7 +31,7 @@ router.get('/', (req, res) => {
  *        schema:
  *          type: "object"
  *          properties:
- *            username:
+ *            login:
  *              type: "string"
  *            password:
  *              type: "string"
@@ -42,15 +42,15 @@ router.get('/', (req, res) => {
  *          description: "Incorrect credentials"
  */
 router.post('/login', (req, res) => {
-    if (req.body.username === 'admin' && req.body.password === 'admin') {
+    if (req.body.login === 'admin' && req.body.password === 'admin') {
         res.json({
-            message: sign({ username: req.body.username }, secret, {
+            message: sign({ login: req.body.login }, secret, {
                 expiresIn: '24h' // expires in 24 hours
             })
         });
     } else {
         sequelize
-            .query('SELECT `zwracanie_hasla`(:login)', {
+            .query('SELECT "zwracanie_hasla"(:login)', {
                 replacements: { login: req.body.login }
             })
             .then(([results]) => {
@@ -68,15 +68,29 @@ router.post('/login', (req, res) => {
                         return;
                     }
                     if (isMatch) {
-                        res.json({
-                            message: sign(
-                                { username: req.body.username },
-                                secret,
-                                {
-                                    expiresIn: '24h' // expires in 24 hours
-                                }
+                        let id = null;
+                        sequelize
+                            .query(
+                                'SELECT "ID_Klienta" AS id FROM klient WHERE klient.login=:login',
+                                { replacements: { login: req.body.login } }
                             )
-                        });
+                            .then(([results]) => {
+                                if (results.length < 1) {
+                                    res.status(500).json({
+                                        message: 'Failed to find id of user'
+                                    });
+                                }
+                                id = results[0].id;
+                                res.json({
+                                    message: sign(
+                                        { id, login: req.body.login },
+                                        secret,
+                                        {
+                                            expiresIn: '24h' // expires in 24 hours
+                                        }
+                                    )
+                                });
+                            });
                         return;
                     }
                     res.status(403).json({
@@ -115,7 +129,7 @@ router.post('/login', (req, res) => {
 router.post('/register', (req, res) => {
     cryptPassword(req.body.password, (err, hash) => {
         if (err) {
-            res.status(400).json({
+            res.status(500).json({
                 message: 'Failed to encrypt password'
             });
             return;
@@ -123,7 +137,7 @@ router.post('/register', (req, res) => {
         const pass = hash;
         sequelize
             .query(
-                'CALL `Dodaj_Klienta`(:imie, :nazwisko, :dataUrodzenia, :pesel, :login, :haslo)',
+                'CALL "dodaj_klienta"(:imie, :nazwisko, :dataUrodzenia, :pesel, :login, :haslo)',
                 {
                     replacements: {
                         imie: req.body.name,
@@ -149,4 +163,4 @@ router.post('/register', (req, res) => {
 });
 
 // export this router to use in our index.js
-export default router;
+module.exports = router;

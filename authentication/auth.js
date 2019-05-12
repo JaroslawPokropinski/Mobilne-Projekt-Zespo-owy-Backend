@@ -1,7 +1,7 @@
 const { verify } = require('jsonwebtoken');
 const { secret } = require('../configuration/config');
 
-exports = (req, res, next) => {
+module.exports = (req, res, next) => {
     let token = req.headers['x-access-token'] || req.headers.authorization;
     if (token && token.startsWith('Bearer ')) {
         // Remove Bearer from string
