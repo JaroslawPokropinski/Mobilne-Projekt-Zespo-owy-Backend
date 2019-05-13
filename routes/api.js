@@ -45,7 +45,7 @@ router.post('/login', (req, res) => {
     if (req.body.login === 'admin' && req.body.password === 'admin') {
         res.json({
             message: sign({ login: req.body.login }, secret, {
-                expiresIn: '24h' // expires in 24 hours
+                expiresIn: '3600h' // expires in 24 hours
             })
         });
     } else {
