@@ -14,7 +14,10 @@ app.use(json());
 app.use('/api', api);
 app.use('/sec', checkToken, sec);
 // Use error handler
-app.use(function(err, req, res) {
+// eslint-disable-next-line no-unused-vars
+app.use(function(err, req, res, _next) {
+    // eslint-disable-next-line no-console
+    console.error(err);
     res.status(400).send(err);
 });
 app.listen(port);
