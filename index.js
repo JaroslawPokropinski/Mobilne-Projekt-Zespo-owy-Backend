@@ -15,8 +15,6 @@ app.use('/api', api);
 app.use('/sec', checkToken, sec);
 // Use error handler
 app.use(function(err, req, res) {
-    res.status(400).json({
-        error: err
-    });
+    res.status(400).send(err);
 });
 app.listen(port);

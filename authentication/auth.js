@@ -22,7 +22,7 @@ module.exports = (req, res, next) => {
             //   success: false,
             //   message: 'Token is not valid'
             // });
-            next('Token is not valid');
+            return next('Token is not valid');
         }
         req.decoded = decoded;
         next();
