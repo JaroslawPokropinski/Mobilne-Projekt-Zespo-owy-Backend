@@ -15,6 +15,24 @@ router.get('/', (req, res) => {
 router.get('/loans', (req, res) => {
     res.send('GET route on sec.');
 });
+router.get('/image/:id', function(req, res) {
+    sequelize
+        .query('SELECT image FROM "pojazd_mechaniczny" WHERE id_pojazdu=:id', {
+            replacements: { id: req.params.id }
+        })
+        .then(([results]) => {
+            if (results.length > 0) {
+                const data = results[0].image;
+                res.contentType('image/jpeg');
+                if (data === null) {
+                    res.end('', 'binary');
+                } else {
+                    res.end(data, 'binary');
+                }
+            }
+            res.status(400);
+        });
+});
 /**
  * @swagger
  * /sec/cars:
@@ -53,14 +71,14 @@ router.get('/cars', (req, res) => {
     // eslint-disable-next-line global-require
     sequelize.query('SELECT * FROM "pojazd_mechaniczny"').then(([results]) => {
         const cars = results.map(currentValue => {
-            let data = currentValue.image;
-            let base64data = '';
-            if (data !== null) {
-                let buff = Buffer.from(data);
-                base64data = `data:image/jpeg;base64,${buff.toString(
-                    'base64'
-                )}`;
-            }
+            // let data = currentValue.image;
+            // let base64data = '';
+            // if (data !== null) {
+            //     let buff = Buffer.from(data);
+            //     base64data = `data:image/jpeg;base64,${buff.toString(
+            //         'base64'
+            //     )}`;
+            // }
             return {
                 id: currentValue.id_pojazdu,
                 name: currentValue.nazwa,
@@ -69,7 +87,7 @@ router.get('/cars', (req, res) => {
                 seats: currentValue.liczba_siedzen,
                 mileage: currentValue.przebieg,
                 category: currentValue.kategoria,
-                image: base64data,
+                image: `image/${currentValue.id_pojazdu}`,
                 owner: currentValue.login,
                 price: currentValue.cena,
                 security: currentValue.kaucja
