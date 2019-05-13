@@ -162,5 +162,24 @@ router.post('/register', (req, res) => {
     });
 });
 
+router.get('/image/:id', function(req, res) {
+    sequelize
+        .query('SELECT image FROM "pojazd_mechaniczny" WHERE id_pojazdu=:id', {
+            replacements: { id: req.params.id }
+        })
+        .then(([results]) => {
+            if (results.length > 0) {
+                const data = results[0].image;
+                res.contentType('image/jpeg');
+                if (data === null) {
+                    res.end('', 'binary');
+                } else {
+                    res.end(data, 'binary');
+                }
+            }
+            res.status(400);
+        });
+});
+
 // export this router to use in our index.js
 module.exports = router;

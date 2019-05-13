@@ -15,24 +15,6 @@ router.get('/', (req, res) => {
 router.get('/loans', (req, res) => {
     res.send('GET route on sec.');
 });
-router.get('/image/:id', function(req, res) {
-    sequelize
-        .query('SELECT image FROM "pojazd_mechaniczny" WHERE id_pojazdu=:id', {
-            replacements: { id: req.params.id }
-        })
-        .then(([results]) => {
-            if (results.length > 0) {
-                const data = results[0].image;
-                res.contentType('image/jpeg');
-                if (data === null) {
-                    res.end('', 'binary');
-                } else {
-                    res.end(data, 'binary');
-                }
-            }
-            res.status(400);
-        });
-});
 /**
  * @swagger
  * /sec/cars:
@@ -87,7 +69,7 @@ router.get('/cars', (req, res) => {
                 seats: currentValue.liczba_siedzen,
                 mileage: currentValue.przebieg,
                 category: currentValue.kategoria,
-                image: `image/${currentValue.id_pojazdu}`,
+                image: `api/image/${currentValue.id_pojazdu}`,
                 owner: currentValue.login,
                 price: currentValue.cena,
                 security: currentValue.kaucja
