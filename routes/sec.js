@@ -50,17 +50,8 @@ router.get('/loans', (req, res) => {
  *               type: float
  */
 router.get('/cars', (req, res) => {
-    // eslint-disable-next-line global-require
     sequelize.query('SELECT * FROM "pojazd_mechaniczny"').then(([results]) => {
         const cars = results.map(currentValue => {
-            // let data = currentValue.image;
-            // let base64data = '';
-            // if (data !== null) {
-            //     let buff = Buffer.from(data);
-            //     base64data = `data:image/jpeg;base64,${buff.toString(
-            //         'base64'
-            //     )}`;
-            // }
             return {
                 id: currentValue.id_pojazdu,
                 name: currentValue.nazwa,
@@ -151,7 +142,7 @@ router.post('/return', (req, res) => {
  *              name:
  *                type: string
  *              year:
- *                type: string
+ *                type: integer
  *              dmc:
  *                type: integer
  *              seats:
@@ -164,7 +155,65 @@ router.post('/return', (req, res) => {
  *                type: string
  */
 router.get('/history', (req, res) => {
-    res.send('Return succeded');
+    sequelize
+        .query('SELECT * FROM "wypozyczenia" WHERE "ID_Klienta"=:clientId', {
+            replacements: { clientId: req.decoded.id }
+        });
+});
+
+/**
+ * @swagger
+ * /sec/return:
+ *    post:
+ *      description: Return car
+ *      parameters:
+ *      - in: "body"
+ *        name: "Car info"
+ *        required: true
+ *        schema:
+ *          type: "object"
+ *          properties:
+ *              name:
+ *                type: string
+ *              year:
+ *                type: integer
+ *              dmc:
+ *                type: integer
+ *              seats:
+ *                type: integer
+ *              mileage:
+ *                type: integer
+ *              image:
+ *                type: string
+ *              price:
+ *                type: float
+ *              security:
+ *                type: float
+ *      responses:
+ *       200:
+ *         description: Car added
+ */
+router.post('add', (req, res) => {
+    sequelize
+        .query(
+            'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security)',
+            {
+                replacements: {
+                    name: req.param.name,
+                    year: req.param.year,
+                    dmc: req.param.dmc,
+                    seats: req.param.seats,
+                    mileage: req.param.mileage,
+                    login: req.param.login,
+                    image: req.param.image,
+                    price: req.param.price,
+                    security: req.param.security
+                }
+            }
+        )
+        .then(() => {
+            res.send('Return succeded');
+        });
 });
 
 module.exports = router;
