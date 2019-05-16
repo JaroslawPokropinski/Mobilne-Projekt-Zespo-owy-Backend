@@ -154,7 +154,9 @@ router.post('/return', (req, res) => {
  *              image:
  *                type: string
  */
-router.get('/history', (req, res) => {
+
+// eslint-disable-next-line no-unused-vars
+router.get('/history', (req, _res) => {
     sequelize
         .query('SELECT * FROM "wypozyczenia" WHERE "ID_Klienta"=:clientId', {
             replacements: { clientId: req.decoded.id }
@@ -163,9 +165,9 @@ router.get('/history', (req, res) => {
 
 /**
  * @swagger
- * /sec/return:
+ * /sec/add:
  *    post:
- *      description: Return car
+ *      description: Add car
  *      parameters:
  *      - in: "body"
  *        name: "Car info"
@@ -193,7 +195,7 @@ router.get('/history', (req, res) => {
  *       200:
  *         description: Car added
  */
-router.post('add', (req, res) => {
+router.post('/add', (req, res) => {
     sequelize
         .query(
             'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security)',
