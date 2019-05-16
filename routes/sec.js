@@ -209,7 +209,7 @@ router.post('/add', (req, res) => {
                     dmc: req.body.dmc,
                     seats: req.body.seats,
                     mileage: req.body.mileage,
-                    login: req.body.login,
+                    login: req.decoded.login,
                     image: req.body.image,
                     price: req.body.price,
                     security: req.body.security
