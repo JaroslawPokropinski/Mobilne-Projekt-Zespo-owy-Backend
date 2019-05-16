@@ -198,6 +198,7 @@ router.get('/history', (req, _res) => {
  *         description: Car added
  */
 router.post('/add', (req, res) => {
+    const image = Buffer.from(req.body.image, 'base64');
     sequelize
         .query(
             'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security)',
@@ -209,7 +210,7 @@ router.post('/add', (req, res) => {
                     seats: req.body.seats,
                     mileage: req.body.mileage,
                     login: req.decoded.login,
-                    image: req.body.image,
+                    image,
                     price: req.body.price,
                     security: req.body.security
                 }
