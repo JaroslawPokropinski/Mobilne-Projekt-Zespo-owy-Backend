@@ -157,10 +157,12 @@ router.post('/return', (req, res) => {
 
 // eslint-disable-next-line no-unused-vars
 router.get('/history', (req, _res) => {
-    sequelize
-        .query('SELECT * FROM "wypozyczenia" WHERE "ID_Klienta"=:clientId', {
+    sequelize.query(
+        'SELECT * FROM "wypozyczenia" WHERE "ID_Klienta"=:clientId',
+        {
             replacements: { clientId: req.decoded.id }
-        });
+        }
+    );
 });
 
 /**
@@ -196,20 +198,21 @@ router.get('/history', (req, _res) => {
  *         description: Car added
  */
 router.post('/add', (req, res) => {
+    console.log(req.body);
     sequelize
         .query(
             'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security)',
             {
                 replacements: {
-                    name: req.param.name,
-                    year: req.param.year,
-                    dmc: req.param.dmc,
-                    seats: req.param.seats,
-                    mileage: req.param.mileage,
-                    login: req.param.login,
-                    image: req.param.image,
-                    price: req.param.price,
-                    security: req.param.security
+                    name: req.body.name,
+                    year: req.body.year,
+                    dmc: req.body.dmc,
+                    seats: req.body.seats,
+                    mileage: req.body.mileage,
+                    login: req.body.login,
+                    image: req.body.image,
+                    price: req.body.price,
+                    security: req.body.security
                 }
             }
         )
