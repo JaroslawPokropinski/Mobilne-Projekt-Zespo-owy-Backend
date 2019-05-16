@@ -198,7 +198,6 @@ router.get('/history', (req, _res) => {
  *         description: Car added
  */
 router.post('/add', (req, res) => {
-    console.log(req.body);
     sequelize
         .query(
             'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security)',
