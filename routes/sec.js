@@ -154,15 +154,36 @@ router.post('/return', (req, res) => {
  *              image:
  *                type: string
  */
+const historyQuery = `SELECT klient.login,
+wypozyczenia.data_wypozyczenia,
+pojazd_mechaniczny.id_pojazdu,
+pojazd_mechaniczny.login AS wlasciciel,
+pojazd_mechaniczny.nazwa,
+pojazd_mechaniczny.rocznik,
+pojazd_mechaniczny.dmc,
+pojazd_mechaniczny.liczba_siedzen,
+pojazd_mechaniczny.sprawnosc,
+pojazd_mechaniczny.stan_wypozyczenia,
+pojazd_mechaniczny.przebieg,
+pojazd_mechaniczny.image,
+pojazd_mechaniczny.kategoria,
+pojazd_mechaniczny.cena,
+pojazd_mechaniczny.kaucja,
+pojazd_mechaniczny.latitude,
+pojazd_mechaniczny.longitude
+FROM klient
+JOIN wypozyczenia ON klient.id_klienta = wypozyczenia.id_klienta
+JOIN pojazd_mechaniczny ON wypozyczenia.id_pojazdu = pojazd_mechaniczny.id_pojazdu`;
 
 router.get('/history', (req, res) => {
     sequelize
-        .query('SELECT * FROM "tabela_wypozyczenia" WHERE "login"=:login', {
+        .query(historyQuery, {
             replacements: { login: req.decoded.login }
         })
         .then(([results]) => {
             const cars = results.map(currentValue => {
                 return {
+                    login: currentValue.login,
                     date: currentValue.data_wypozyczenia,
                     id: currentValue.id_pojazdu,
                     name: currentValue.nazwa,
@@ -175,8 +196,8 @@ router.get('/history', (req, res) => {
                     owner: currentValue.wlasciciel,
                     price: currentValue.cena,
                     security: currentValue.kaucja
-                };
-            });
+                }
+            }).filter(value => value.login === req.decoded.login);
             res.json(cars);
         });
 });
