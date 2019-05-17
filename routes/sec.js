@@ -63,7 +63,9 @@ router.get('/cars', (req, res) => {
                 image: `api/image/${currentValue.id_pojazdu}`,
                 owner: currentValue.login,
                 price: currentValue.cena,
-                security: currentValue.kaucja
+                security: currentValue.kaucja,
+                latitude: currentValue.latitude,
+                longitude: currentValue.longitude
             };
         });
         res.json(cars);
@@ -181,23 +183,27 @@ router.get('/history', (req, res) => {
             replacements: { login: req.decoded.login }
         })
         .then(([results]) => {
-            const cars = results.map(currentValue => {
-                return {
-                    login: currentValue.login,
-                    date: currentValue.data_wypozyczenia,
-                    id: currentValue.id_pojazdu,
-                    name: currentValue.nazwa,
-                    year: currentValue.rocznik,
-                    dmc: currentValue.dmc,
-                    seats: currentValue.liczba_siedzen,
-                    mileage: currentValue.przebieg,
-                    category: currentValue.kategoria,
-                    image: `api/image/${currentValue.id_pojazdu}`,
-                    owner: currentValue.wlasciciel,
-                    price: currentValue.cena,
-                    security: currentValue.kaucja
-                }
-            }).filter(value => value.login === req.decoded.login);
+            const cars = results
+                .map(currentValue => {
+                    return {
+                        login: currentValue.login,
+                        date: currentValue.data_wypozyczenia,
+                        id: currentValue.id_pojazdu,
+                        name: currentValue.nazwa,
+                        year: currentValue.rocznik,
+                        dmc: currentValue.dmc,
+                        seats: currentValue.liczba_siedzen,
+                        mileage: currentValue.przebieg,
+                        category: currentValue.kategoria,
+                        image: `api/image/${currentValue.id_pojazdu}`,
+                        owner: currentValue.wlasciciel,
+                        price: currentValue.cena,
+                        security: currentValue.kaucja,
+                        latitude: currentValue.latitude,
+                        longitude: currentValue.longitude
+                    };
+                })
+                .filter(value => value.login === req.decoded.login);
             res.json(cars);
         });
 });
@@ -238,7 +244,7 @@ router.post('/add', (req, res) => {
     const image = Buffer.from(req.body.image, 'base64');
     sequelize
         .query(
-            'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security)',
+            'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security, :latitude, :longitude)',
             {
                 replacements: {
                     name: req.body.name,
@@ -249,7 +255,9 @@ router.post('/add', (req, res) => {
                     login: req.decoded.login,
                     image,
                     price: req.body.price,
-                    security: req.body.security
+                    security: req.body.security,
+                    latitude: req.body.latitude,
+                    longitude: req.body.longitude
                 }
             }
         )
