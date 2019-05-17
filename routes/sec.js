@@ -88,7 +88,7 @@ router.get('/cars', (req, res) => {
  *       200:
  *         description: Rent succeded
  */
-const rentalsQuery = `INSERT INTO wypozyczenia("ID_Klienta", "ID_Pojazdu", "data_Wypozyczenia", "oplacenie_Kaucji", "zwrocenie_Pojazdu")
+const rentalsQuery = `INSERT INTO wypozyczenia("id_klienta", "id_pojazdu", "data_wypozyczenia", "oplacenie_kaucji", "zwrocenie_pojazdu")
 VALUES(:clientId, :carId, :date, true ,false);`;
 
 router.post('/rent', (req, res) => {
