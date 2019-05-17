@@ -8,6 +8,7 @@ const {
 const sequelize = require('../configuration/databaseConfig');
 
 const router = Router();
+const fs = require('fs');
 
 /**
  * @swagger
@@ -159,12 +160,19 @@ router.get('/image/:id', function(req, res) {
                 const data = results[0].image;
                 res.contentType('image/jpeg');
                 if (data === null) {
-                    res.end('', 'binary');
+                    fs.readFile('./img-placeholder.jpg', (err, fileData) => {
+                        if (err) {
+                            res.end('', 'binary');
+                        } else {
+                            res.end(fileData, 'binary');
+                        }
+                    });
                 } else {
                     res.end(data, 'binary');
                 }
+            } else {
+                res.status(400);
             }
-            res.status(400);
         });
 });
 
