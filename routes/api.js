@@ -81,14 +81,14 @@ router.post('/login', (req, res) => {
                                     });
                                 }
                                 id = results[0].id;
-                                res.send(
+                                res.send(`"${
                                     sign(
                                         { id, login: req.body.login },
                                         secret,
                                         {
                                             expiresIn: '24h' // expires in 24 hours
                                         }
-                                    )
+                                    )}"`
                                 );
                             });
                         return;
