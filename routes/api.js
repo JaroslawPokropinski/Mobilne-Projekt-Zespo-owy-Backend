@@ -71,7 +71,7 @@ router.post('/login', (req, res) => {
                         let id = null;
                         sequelize
                             .query(
-                                'SELECT "ID_Klienta" AS id FROM klient WHERE klient.login=:login',
+                                'SELECT "id_klienta" AS id FROM klient WHERE klient.login=:login',
                                 { replacements: { login: req.body.login } }
                             )
                             .then(([results]) => {
