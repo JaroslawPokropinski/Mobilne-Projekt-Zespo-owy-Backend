@@ -155,13 +155,30 @@ router.post('/return', (req, res) => {
  *                type: string
  */
 
-// eslint-disable-next-line no-unused-vars
-router.get('/history', (req, _res) => {
+router.get('/history', (req, res) => {
     sequelize.query(
-        'SELECT * FROM "wypozyczenia" WHERE "ID_Klienta"=:clientId',
+        'SELECT * FROM "tabela_wypozyczenia" WHERE "login"=:login',
         {
-            replacements: { clientId: req.decoded.id }
-        }
+            replacements: { login: req.decoded.login }
+        }.then(([results]) => {
+            const cars = results.map(currentValue => {
+                return {
+                    date: currentValue.data_wypozyczenia,
+                    id: currentValue.id_pojazdu,
+                    name: currentValue.nazwa,
+                    year: currentValue.rocznik,
+                    dmc: currentValue.dmc,
+                    seats: currentValue.liczba_siedzen,
+                    mileage: currentValue.przebieg,
+                    category: currentValue.kategoria,
+                    image: `api/image/${currentValue.id_pojazdu}`,
+                    owner: currentValue.wlasciciel,
+                    price: currentValue.cena,
+                    security: currentValue.kaucja
+                };
+            });
+            res.json(cars);
+        })
     );
 });
 
