@@ -156,11 +156,11 @@ router.post('/return', (req, res) => {
  */
 
 router.get('/history', (req, res) => {
-    sequelize.query(
-        'SELECT * FROM "tabela_wypozyczenia" WHERE "login"=:login',
-        {
+    sequelize
+        .query('SELECT * FROM "tabela_wypozyczenia" WHERE "login"=:login', {
             replacements: { login: req.decoded.login }
-        }.then(([results]) => {
+        })
+        .then(([results]) => {
             const cars = results.map(currentValue => {
                 return {
                     date: currentValue.data_wypozyczenia,
@@ -178,8 +178,7 @@ router.get('/history', (req, res) => {
                 };
             });
             res.json(cars);
-        })
-    );
+        });
 });
 
 /**
