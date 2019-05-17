@@ -41,64 +41,55 @@ router.get('/', (req, res) => {
  *       403:
  *          description: "Incorrect credentials"
  */
-router.post('/login', (req, res) => {
-    if (req.body.login === 'admin' && req.body.password === 'admin') {
-        res.json({
-            message: sign({ login: req.body.login }, secret, {
-                expiresIn: '3600h' // expires in 24 hours
-            })
-        });
-    } else {
-        sequelize
-            .query('SELECT "zwracanie_hasla"(:login)', {
-                replacements: { login: req.body.login }
-            })
-            .then(([results]) => {
-                if (results.length < 1) {
-                    res.status(403).json({
-                        message: 'Incorrect username or password'
+const login = (login, password, res) => {
+    sequelize
+        .query('SELECT "zwracanie_hasla"(:login)', {
+            replacements: { login }
+        })
+        .then(([results]) => {
+            if (results.length < 1) {
+                res.status(403).json({
+                    message: 'Incorrect username or password'
+                });
+            }
+            const hashPass = Object.values(results[0])[0];
+            comparePassword(password, hashPass, (err, isMatch) => {
+                if (err) {
+                    res.status(500).json({
+                        message: 'Failed to compare passwords'
                     });
+                    return;
                 }
-                const hashPass = Object.values(results[0])[0];
-                comparePassword(req.body.password, hashPass, (err, isMatch) => {
-                    if (err) {
-                        res.status(500).json({
-                            message: 'Failed to compare passwords'
+                if (isMatch) {
+                    let id = null;
+                    sequelize
+                        .query(
+                            'SELECT "id_klienta" AS id FROM klient WHERE klient.login=:login',
+                            { replacements: { login: login } }
+                        )
+                        .then(([results]) => {
+                            if (results.length < 1) {
+                                res.status(500).json({
+                                    message: 'Failed to find id of user'
+                                });
+                            }
+                            id = results[0].id;
+                            res.send(
+                                `"${sign({ id, login: login }, secret, {
+                                    expiresIn: '24h' // expires in 24 hours
+                                })}"`
+                            );
                         });
-                        return;
-                    }
-                    if (isMatch) {
-                        let id = null;
-                        sequelize
-                            .query(
-                                'SELECT "id_klienta" AS id FROM klient WHERE klient.login=:login',
-                                { replacements: { login: req.body.login } }
-                            )
-                            .then(([results]) => {
-                                if (results.length < 1) {
-                                    res.status(500).json({
-                                        message: 'Failed to find id of user'
-                                    });
-                                }
-                                id = results[0].id;
-                                res.send(`"${
-                                    sign(
-                                        { id, login: req.body.login },
-                                        secret,
-                                        {
-                                            expiresIn: '24h' // expires in 24 hours
-                                        }
-                                    )}"`
-                                );
-                            });
-                        return;
-                    }
-                    res.status(403).json({
-                        message: 'Incorrect username or password'
-                    });
+                    return;
+                }
+                res.status(403).json({
+                    message: 'Incorrect username or password'
                 });
             });
-    }
+        });
+};
+router.post('/login', (req, res) => {
+    login(req.body.login, req.body.password, res);
 });
 
 /**
@@ -149,11 +140,7 @@ router.post('/register', (req, res) => {
                     }
                 }
             )
-            .then(() =>
-                res.json({
-                    message: 'success'
-                })
-            )
+            .then(() => login(req.body.login, req.body.password, res))
             .catch(e => {
                 res.status(400).json({
                     message: e.original.sqlMessage
