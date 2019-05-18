@@ -244,7 +244,7 @@ router.post('/add', (req, res) => {
     const image = Buffer.from(req.body.image, 'base64');
     sequelize
         .query(
-            'CALL "dodaj_pojazd_full"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security, :latitude, :longitude)',
+            'CALL "dodaj_pojazd_all"(:name, :year, :dmc, :seats, true, false, :mileage, :login, :image, :price, :security, :latitude, :longitude)',
             {
                 replacements: {
                     name: req.body.name,
