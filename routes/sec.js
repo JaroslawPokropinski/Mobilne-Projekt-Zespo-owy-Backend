@@ -188,17 +188,17 @@ router.post('/return', (req, res) => {
             'Update wypozyczenia SET wypozyczenia.zwrocenie_pojazdu=true WHERE id_klienta=:clientId AND id_pojazdu=:carId',
             {
                 replacements: {
-                    clientId: req.body.clientId,
+                    clientId: req.decoded.id,
                     carId: req.body.carId
                 }
             }
         )
         .then(() => {
             res.send('Return succeded');
+        })
+        .catch(() => {
+            res.status(400).send('Return failed');
         });
-    // .catch(() => {
-    //     res.status(400).send('Return failed');
-    // });
 });
 
 /**
