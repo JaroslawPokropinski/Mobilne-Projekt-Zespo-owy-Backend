@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const moment = require('moment');
 const sequelize = require('../configuration/databaseConfig');
 
 const router = Router();
@@ -90,18 +91,77 @@ router.get('/cars', (req, res) => {
  *       200:
  *         description: Rent succeded
  */
+const historyQuery = `SELECT klient.login,
+wypozyczenia.data_wypozyczenia,
+pojazd_mechaniczny.id_pojazdu,
+pojazd_mechaniczny.login AS wlasciciel,
+pojazd_mechaniczny.nazwa,
+pojazd_mechaniczny.rocznik,
+pojazd_mechaniczny.dmc,
+pojazd_mechaniczny.liczba_siedzen,
+pojazd_mechaniczny.sprawnosc,
+pojazd_mechaniczny.stan_wypozyczenia,
+pojazd_mechaniczny.przebieg,
+pojazd_mechaniczny.image,
+pojazd_mechaniczny.kategoria,
+pojazd_mechaniczny.cena,
+pojazd_mechaniczny.kaucja,
+pojazd_mechaniczny.latitude,
+pojazd_mechaniczny.longitude
+FROM klient
+JOIN wypozyczenia ON klient.id_klienta = wypozyczenia.id_klienta
+JOIN pojazd_mechaniczny ON wypozyczenia.id_pojazdu = pojazd_mechaniczny.id_pojazdu`;
+
+const getRental = login => {
+    return sequelize
+        .query(historyQuery, {
+            replacements: { login }
+        })
+        .then(([results]) => {
+            const cars = results
+                .map(currentValue => {
+                    return {
+                        login: currentValue.login,
+                        date: currentValue.data_wypozyczenia,
+                        id: currentValue.id_pojazdu,
+                        name: currentValue.nazwa,
+                        year: currentValue.rocznik,
+                        dmc: currentValue.dmc,
+                        seats: currentValue.liczba_siedzen,
+                        mileage: currentValue.przebieg,
+                        category: currentValue.kategoria,
+                        image: `api/image/${currentValue.id_pojazdu}`,
+                        owner: currentValue.wlasciciel,
+                        price: currentValue.cena,
+                        security: currentValue.kaucja,
+                        latitude: currentValue.latitude,
+                        longitude: currentValue.longitude,
+                        state: currentValue.stan_wypozyczenia
+                    };
+                })
+                .filter(value => value.login === login && value.state === true);
+            return cars[0] ? cars[0] : null;
+        });
+};
+
 const rentalsQuery = `INSERT INTO wypozyczenia("id_klienta", "id_pojazdu", "data_wypozyczenia", "oplacenie_kaucji", "zwrocenie_pojazdu")
 VALUES(:clientId, :carId, :date, true ,false);`;
 
 router.post('/rent', (req, res) => {
-    sequelize.query(rentalsQuery, {
-        replacements: {
-            clientId: req.decoded.id,
-            carId: req.body.carId,
-            date: '2019-05-12'
+    getRental(req.decoded.login).then(car => {
+        if (car === null) {
+            sequelize.query(rentalsQuery, {
+                replacements: {
+                    clientId: req.decoded.id,
+                    carId: req.body.carId,
+                    date: moment('YYYY-MM-DD') // '2019-05-12'
+                }
+            });
+            res.send('Rent succeded');
+        } else {
+            res.status(400).send('Cannot rent more than one vechicle');
         }
     });
-    res.send('Rent succeded');
 });
 
 /**
@@ -123,7 +183,22 @@ router.post('/rent', (req, res) => {
  *         description: Return succeded
  */
 router.post('/return', (req, res) => {
-    res.send('Return succeded');
+    sequelize
+        .query(
+            'Update wypozyczenia SET wypozyczenia.zwrocenie_pojazdu=true WHERE id_klienta=:clientId AND id_pojazdu=:carId',
+            {
+                replacements: {
+                    clientId: req.body.clientId,
+                    carId: req.body.carId
+                }
+            }
+        )
+        .then(() => {
+            res.send('Return succeded');
+        })
+        .catch(() => {
+            res.status(400).send('Return failed');
+        });
 });
 
 /**
@@ -156,26 +231,6 @@ router.post('/return', (req, res) => {
  *              image:
  *                type: string
  */
-const historyQuery = `SELECT klient.login,
-wypozyczenia.data_wypozyczenia,
-pojazd_mechaniczny.id_pojazdu,
-pojazd_mechaniczny.login AS wlasciciel,
-pojazd_mechaniczny.nazwa,
-pojazd_mechaniczny.rocznik,
-pojazd_mechaniczny.dmc,
-pojazd_mechaniczny.liczba_siedzen,
-pojazd_mechaniczny.sprawnosc,
-pojazd_mechaniczny.stan_wypozyczenia,
-pojazd_mechaniczny.przebieg,
-pojazd_mechaniczny.image,
-pojazd_mechaniczny.kategoria,
-pojazd_mechaniczny.cena,
-pojazd_mechaniczny.kaucja,
-pojazd_mechaniczny.latitude,
-pojazd_mechaniczny.longitude
-FROM klient
-JOIN wypozyczenia ON klient.id_klienta = wypozyczenia.id_klienta
-JOIN pojazd_mechaniczny ON wypozyczenia.id_pojazdu = pojazd_mechaniczny.id_pojazdu`;
 
 router.get('/history', (req, res) => {
     sequelize
@@ -200,7 +255,8 @@ router.get('/history', (req, res) => {
                         price: currentValue.cena,
                         security: currentValue.kaucja,
                         latitude: currentValue.latitude,
-                        longitude: currentValue.longitude
+                        longitude: currentValue.longitude,
+                        state: currentValue.stan_wypozyczenia
                     };
                 })
                 .filter(value => value.login === req.decoded.login);
@@ -262,8 +318,14 @@ router.post('/add', (req, res) => {
             }
         )
         .then(() => {
-            res.send('Return succeded');
+            res.send('Add succeded');
         });
+});
+
+router.get('/rentals', function(req, res) {
+    getRental(req.decoded.login).then(car => {
+        res.json(car);
+    });
 });
 
 module.exports = router;
