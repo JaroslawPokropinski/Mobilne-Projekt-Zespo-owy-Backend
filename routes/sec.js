@@ -196,7 +196,9 @@ router.post('/return', (req, res) => {
         .then(() => {
             res.send('Return succeded');
         })
-        .catch(() => {
+        .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error(err);
             res.status(400).send('Return failed');
         });
 });
