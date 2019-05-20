@@ -139,7 +139,7 @@ const getRental = login => {
                         state: currentValue.stan_wypozyczenia
                     };
                 })
-                .filter(value => value.login === login && value.state === true);
+                .filter(value => value.login === login && value.state === false);
             return cars[0] ? cars[0] : null;
         });
 };
