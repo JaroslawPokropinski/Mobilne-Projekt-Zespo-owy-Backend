@@ -322,7 +322,7 @@ router.post('/add', (req, res) => {
         });
 });
 
-router.get('/rentals', function(req, res) {
+router.get('/rental', function(req, res) {
     getRental(req.decoded.login).then(car => {
         res.json(car);
     });
