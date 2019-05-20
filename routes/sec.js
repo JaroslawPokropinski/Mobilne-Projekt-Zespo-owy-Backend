@@ -195,10 +195,10 @@ router.post('/return', (req, res) => {
         )
         .then(() => {
             res.send('Return succeded');
-        })
-        .catch(() => {
-            res.status(400).send('Return failed');
         });
+    // .catch(() => {
+    //     res.status(400).send('Return failed');
+    // });
 });
 
 /**
