@@ -185,7 +185,7 @@ router.post('/rent', (req, res) => {
 router.post('/return', (req, res) => {
     sequelize
         .query(
-            'Update wypozyczenia SET wypozyczenia.zwrocenie_pojazdu=true WHERE id_klienta=:clientId AND id_pojazdu=:carId',
+            'Update wypozyczenia SET zwrocenie_pojazdu=true WHERE id_klienta=:clientId AND id_pojazdu=:carId',
             {
                 replacements: {
                     clientId: req.decoded.id,
