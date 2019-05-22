@@ -52,7 +52,10 @@ router.get('/loans', (req, res) => {
  */
 router.get('/cars', (req, res) => {
     sequelize
-        .query('SELECT * FROM "pojazd_mechaniczny" WHERE login<>:login', {replacements: {login: req.decoded.login}})
+        .query(
+            'SELECT * FROM "pojazd_mechaniczny" WHERE login<>:login AND stan_wypozyczenia=false',
+            { replacements: { login: req.decoded.login } }
+        )
         .then(([results]) => {
             const cars = results.map(currentValue => {
                 return {
@@ -141,9 +144,7 @@ const getRental = login => {
                         state: currentValue.stan_wypozyczenia
                     };
                 })
-                .filter(
-                    value => value.login === login && value.state === true
-                );
+                .filter(value => value.login === login && value.state === true);
             return cars[0] ? cars[0] : null;
         });
 };
