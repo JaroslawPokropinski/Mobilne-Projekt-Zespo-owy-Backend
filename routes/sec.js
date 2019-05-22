@@ -156,7 +156,7 @@ router.post('/rent', (req, res) => {
                 replacements: {
                     clientId: req.decoded.id,
                     carId: req.body.carId,
-                    date: moment('YYYY-MM-DD') // '2019-05-12'
+                    date: moment().format('YYYY-MM-DD').toString() // '2019-05-12'
                 }
             });
             res.send('Rent succeded');
