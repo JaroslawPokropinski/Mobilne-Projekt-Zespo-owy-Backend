@@ -139,7 +139,9 @@ const getRental = login => {
                         state: currentValue.stan_wypozyczenia
                     };
                 })
-                .filter(value => value.login === login && value.state === false);
+                .filter(
+                    value => value.login === login && value.state === false
+                );
             return cars[0] ? cars[0] : null;
         });
 };
@@ -196,7 +198,7 @@ router.post('/return', (req, res) => {
         .then(() => {
             res.send('Return succeded');
         })
-        .catch((err) => {
+        .catch(err => {
             // eslint-disable-next-line no-console
             console.error(err);
             res.status(400).send('Return failed');
@@ -328,6 +330,36 @@ router.get('/rental', function(req, res) {
     getRental(req.decoded.login).then(car => {
         res.json(car);
     });
+});
+
+router.get('/myCars', function(req, res) {
+    sequelize
+        .query('SELECT * FROM pojazd_mechaniczny WHERE login=:login', {
+            replacements: { login: req.decoded.login }
+        })
+        .then(([results]) => {
+            const cars = results.map(currentValue => {
+                return {
+                    id: currentValue.id_pojazdu,
+                    name: currentValue.nazwa,
+                    year: currentValue.rocznik,
+                    dmc: currentValue.dmc,
+                    seats: currentValue.liczba_siedzen,
+                    mileage: currentValue.przebieg,
+                    category: currentValue.kategoria,
+                    image: `api/image/${currentValue.id_pojazdu}`,
+                    owner: currentValue.login,
+                    price: currentValue.cena,
+                    security: currentValue.kaucja,
+                    latitude: currentValue.latitude,
+                    longitude: currentValue.longitude
+                };
+            });
+            res.json(cars);
+        })
+        .catch(err => {
+            res.status(400).send(err);
+        });
 });
 
 module.exports = router;
