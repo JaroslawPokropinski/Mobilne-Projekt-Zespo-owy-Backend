@@ -51,26 +51,28 @@ router.get('/loans', (req, res) => {
  *               type: float
  */
 router.get('/cars', (req, res) => {
-    sequelize.query('SELECT * FROM "pojazd_mechaniczny"').then(([results]) => {
-        const cars = results.map(currentValue => {
-            return {
-                id: currentValue.id_pojazdu,
-                name: currentValue.nazwa,
-                year: currentValue.rocznik,
-                dmc: currentValue.dmc,
-                seats: currentValue.liczba_siedzen,
-                mileage: currentValue.przebieg,
-                category: currentValue.kategoria,
-                image: `api/image/${currentValue.id_pojazdu}`,
-                owner: currentValue.login,
-                price: currentValue.cena,
-                security: currentValue.kaucja,
-                latitude: currentValue.latitude,
-                longitude: currentValue.longitude
-            };
+    sequelize
+        .query('SELECT * FROM "pojazd_mechaniczny" WHERE login<>:login', {replacements: {login: req.decoded.login}})
+        .then(([results]) => {
+            const cars = results.map(currentValue => {
+                return {
+                    id: currentValue.id_pojazdu,
+                    name: currentValue.nazwa,
+                    year: currentValue.rocznik,
+                    dmc: currentValue.dmc,
+                    seats: currentValue.liczba_siedzen,
+                    mileage: currentValue.przebieg,
+                    category: currentValue.kategoria,
+                    image: `api/image/${currentValue.id_pojazdu}`,
+                    owner: currentValue.login,
+                    price: currentValue.cena,
+                    security: currentValue.kaucja,
+                    latitude: currentValue.latitude,
+                    longitude: currentValue.longitude
+                };
+            });
+            res.json(cars);
         });
-        res.json(cars);
-    });
 });
 
 /**
@@ -140,7 +142,7 @@ const getRental = login => {
                     };
                 })
                 .filter(
-                    value => value.login === login && value.state === false
+                    value => value.login === login && value.state === true
                 );
             return cars[0] ? cars[0] : null;
         });
@@ -152,14 +154,18 @@ VALUES(:clientId, :carId, :date, true ,false);`;
 router.post('/rent', (req, res) => {
     getRental(req.decoded.login).then(car => {
         if (car === null) {
-            sequelize.query(rentalsQuery, {
-                replacements: {
-                    clientId: req.decoded.id,
-                    carId: req.body.carId,
-                    date: moment().format('YYYY-MM-DD').toString() // '2019-05-12'
-                }
-            });
-            res.send('Rent succeded');
+            sequelize
+                .query(rentalsQuery, {
+                    replacements: {
+                        clientId: req.decoded.id,
+                        carId: req.body.carId,
+                        date: moment()
+                            .format('YYYY-MM-DD')
+                            .toString() // '2019-05-12'
+                    }
+                })
+                .then(() => res.send('Rent succeded'))
+                .catch(() => res.status(400).send('Rent failed'));
         } else {
             res.status(400).send('Cannot rent more than one vechicle');
         }
