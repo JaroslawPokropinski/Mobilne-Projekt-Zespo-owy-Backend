@@ -359,7 +359,8 @@ router.get('/myCars', function(req, res) {
                     price: currentValue.cena,
                     security: currentValue.kaucja,
                     latitude: currentValue.latitude,
-                    longitude: currentValue.longitude
+                    longitude: currentValue.longitude,
+                    isRented: currentValue.stan_wypozyczenia
                 };
             });
             res.json(cars);
